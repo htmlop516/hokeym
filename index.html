@@ -3,178 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Три Кота: Hockey UID Edition</title>
+    <title>Три Кота: Хоккей ELO & UID</title>
     <style>
-        :root { --accent: #ff4757; --bg: #0a0a12; --card: #161625; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; }
+        :root {
+            --gold: linear-gradient(90deg, #bf953f, #fcf6ba, #b38728, #fcf6ba, #aa771c);
+            --pearl: linear-gradient(135deg, #fff, #e6d3f9, #c8f4f9, #f9d3e3, #fff);
+            --accent: #ff4757;
+        }
+        body { 
+            background: #0a0a12; color: white; font-family: 'Arial', sans-serif; 
+            margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; 
+        }
         
-        /* ШАПКА С UID */
-        .header { background: var(--card); padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #252545; }
-        .pfp-wrap { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent); overflow: hidden; position: relative; }
-        .pfp-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        /* ШАПКА И ПРОФИЛЬ */
+        .header { background: #161625; padding: 15px; display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #252545; }
+        .pfp-box { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--accent); overflow: hidden; cursor: pointer; flex-shrink: 0; }
+        .pfp-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        .user-meta { flex: 1; }
-        .uid-tag { font-size: 9px; color: #777; background: #000; padding: 2px 5px; border-radius: 3px; display: inline-block; margin-top: 2px; }
-        
-        .nav-btn { padding: 6px 12px; background: #252545; border: none; color: white; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold; }
+        .user-info { flex-grow: 1; }
+        .uid-tag { font-size: 10px; color: #777; margin-top: 5px; background: #000; padding: 2px 6px; border-radius: 4px; display: inline-block; }
         
         /* ТИТУЛЫ */
-        .t-gold { background: linear-gradient(90deg, #ffd700, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200%; animation: shine 2s infinite linear; }
-        .t-pearl { background: linear-gradient(45deg, #fff, #e6d3f9, #c8f4f9, #f9d3e3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite linear; font-weight: 900; }
+        .title-badge { font-weight: 900; font-size: 12px; text-transform: uppercase; margin-top: 5px; }
+        .gold-t { background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 2s infinite linear; background-size: 200%; }
+        .pearl-t { background: var(--pearl); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite linear; background-size: 200%; filter: drop-shadow(0 0 5px #fff); }
         @keyframes shine { to { background-position: 200% center; } }
 
-        /* ОКНО ТИТУЛОВ */
-        #titles-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; display: none; padding: 20px; text-align: center; }
-        .titles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .title-card { background: #1f1f35; padding: 15px; border-radius: 10px; border: 1px solid #333; }
-        .locked { opacity: 0.3; filter: grayscale(1); }
+        /* ИГРОВАЯ ЗОНА */
+        .game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle, #1a1a2e 0%, #0a0a12 100%); }
+        #score { font-size: 40px; font-weight: 900; margin-bottom: 10px; letter-spacing: 5px; }
+        canvas { background: #fff; border-radius: 15px; max-width: 95%; height: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
 
-        /* ИГРА */
-        .main-game { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        canvas { background: #fff; border-radius: 10px; width: 92vw; height: auto; box-shadow: 0 0 20px rgba(255, 71, 87, 0.2); }
-        #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; border-radius: 10px; }
+        /* BATTLE PASS */
+        .bp-zone { background: #161625; padding: 15px; border-top: 2px solid #252545; }
+        .bp-track { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+        .bp-item { min-width: 80px; height: 100px; background: #1f1f35; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; border: 1px solid #333; }
+        .bp-item.unlocked { border-color: #44ffaa; background: #253535; }
+
+        /* МЕНЮ */
+        #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
+        .play-btn { padding: 15px 50px; font-size: 20px; background: var(--accent); border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; }
         
-        #score { font-size: 32px; font-weight: 900; margin-bottom: 10px; letter-spacing: 5px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="pfp-wrap" onclick="document.getElementById('f').click()">
-            <img src="https://i.imgur.com" id="pfp">
+        <div class="pfp-box" onclick="document.getElementById('fileIn').click()">
+            <img src="https://i.imgur.com" id="pfpImg">
         </div>
-        <input type="file" id="f" hidden accept="image/*">
+        <input type="file" id="fileIn" hidden accept="image/*">
         
-        <div class="user-meta">
-            <div id="nDisplay" style="font-size: 14px; font-weight: bold;">Три_Кота_Про</div>
-            <div id="activeTitle" style="font-size: 10px;">Новичок</div>
-            <div class="uid-tag">ID: <span id="uidDisplay">######</span></div>
+        <div class="user-info">
+            <input type="text" id="nameIn" placeholder="Ник..." oninput="syncName()" style="background:#000; border:1px solid #333; color:white; padding:5px; border-radius:5px;">
+            <h3 id="nameShow" style="margin:5px 0;">Игрок_Кот</h3>
+            <div id="titleShow" class="title-badge gold-t">ЗОЛОТОЙ МАСТЕР</div>
+            <br>
+            <div class="uid-tag">UID: <span id="uidShow">000000</span></div>
         </div>
 
-        <div style="text-align: right;">
-            <div id="eloDisp" style="color: #44ffaa; font-weight: bold; font-size: 20px;">1000</div>
-            <button class="nav-btn" onclick="openTitles()" style="margin-top: 5px;">🏆 ТИТУЛЫ</button>
+        <div style="text-align:right;">
+            <div style="color:#44ffaa; font-size:28px; font-weight:bold;" id="eloShow">1000</div>
+            <div style="font-size:12px; color:orange;">СЕРИЯ: <span id="streakShow">0</span> 🔥</div>
         </div>
     </div>
 
-    <div id="titles-screen">
-        <h2 style="color: var(--accent);">Гардероб Титулов</h2>
-        <div class="titles-grid" id="titlesGrid"></div>
-        <button class="nav-btn" style="margin-top: 30px; padding: 10px 40px;" onclick="closeTitles()">НАЗАД</button>
-    </div>
-
-    <div class="main-game">
+    <div class="game-area">
         <div id="score">0 : 0</div>
-        <canvas id="arena" width="500" height="300"></canvas>
+        <canvas id="hockeyCanvas" width="600" height="350"></canvas>
+        
         <div id="menu">
-            <h2 id="mMsg">ГОТОВ К МАТЧУ?</h2>
-            <button class="nav-btn" style="padding: 15px 40px; font-size: 18px; background: var(--accent);" onclick="startMatch()">ИГРАТЬ</button>
-            <p style="font-size: 10px; color: #666; margin-top: 15px;">Управление: Пальцем или мышкой</p>
+            <h1 id="mMsg">ГОТОВ К МАТЧУ?</h1>
+            <select id="botDiff" style="padding:10px; margin-bottom:20px; border-radius:10px; background:#1f1f35; color:white;">
+                <option value="2">Бот: Новичок (+20 ELO)</option>
+                <option value="4.5">Бот: Профи (+40 ELO)</option>
+                <option value="8">Бот: ЛЕГЕНДА (+80 ELO)</option>
+            </select>
+            <button class="play-btn" onclick="startMatch()">ИГРАТЬ</button>
         </div>
+    </div>
+
+    <div class="bp-zone">
+        <div style="font-size:14px; margin-bottom:10px;">Battle Pass: Уровень <span id="bpLvl">1</span></div>
+        <div class="bp-track" id="bpTrack"></div>
     </div>
 
 <script>
-    const canvas = document.getElementById('arena');
+    const canvas = document.getElementById('hockeyCanvas');
     const ctx = canvas.getContext('2d');
     
-    const ALL_TITLES = [
-        { id: 0, name: "Новичок", class: "", req: 0 },
-        { id: 1, name: "Золотой Чемпион", class: "t-gold", req: 1100 },
-        { id: 2, name: "Перламутровый Бог", class: "t-pearl", req: 1350 }
-    ];
-
-    // ГЕНЕРАЦИЯ UID И ЗАГРУЗКА
-    let user = JSON.parse(localStorage.getItem('hockey_pro_save')) || {
-        elo: 1000, 
-        streak: 0, 
-        pfp: "https://i.imgur.com", 
-        activeTitleId: 0,
-        uid: Math.floor(100000 + Math.random() * 900000) // Генерация 6-значного кода
+    // ДАННЫЕ И СОХРАНЕНИЕ
+    let user = JSON.parse(localStorage.getItem('cat_hockey_save')) || {
+        elo: 1000, streak: 0, bp: 1, 
+        name: "Игрок_Кот", 
+        pfp: "https://i.imgur.com",
+        uid: Math.floor(100000 + Math.random() * 900000)
     };
 
-    function save() { localStorage.setItem('hockey_pro_save', JSON.stringify(user)); updateUI(); }
+    function save() { localStorage.setItem('cat_hockey_save', JSON.stringify(user)); updateUI(); }
 
-    function updateUI() {
-        document.getElementById('eloDisp').innerText = user.elo;
-        document.getElementById('pfp').src = user.pfp;
-        document.getElementById('uidDisplay').innerText = user.uid;
-        const cur = ALL_TITLES.find(t => t.id === user.activeTitleId);
-        document.getElementById('activeTitle').innerText = cur.name;
-        document.getElementById('activeTitle').className = cur.class;
-    }
+    // ИГРОВЫЕ ОБЪЕКТЫ
+    let p = { y: 175, r: 25, c: '#00d2ff' };
+    let b = { y: 175, r: 25, c: '#ff4757', s: 3 };
+    let puck = { x: 300, y: 175, vx: 0, vy: 0, r: 12 };
+    let score = { p: 0, b: 0 }, active = false;
 
-    // МОБИЛЬНОЕ + ПК УПРАВЛЕНИЕ
+    // УПРАВЛЕНИЕ (МЫШЬ + ТАЧ)
     function handleMove(clientY) {
-        const rect = canvas.getBoundingClientRect();
-        const ty = (clientY - rect.top) * (300 / rect.height);
-        p.y = Math.min(Math.max(25, ty), 275);
+        let rect = canvas.getBoundingClientRect();
+        let ty = (clientY - rect.top) * (350 / rect.height);
+        p.y = Math.min(Math.max(p.r, ty), 350 - p.r);
     }
-    canvas.addEventListener('touchmove', e => { e.preventDefault(); handleMove(e.touches[0].clientY); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); handleMove(e.touches[0].clientY); }, {passive: false});
     canvas.onmousemove = e => handleMove(e.clientY);
 
-    // ГЕЙМПЛЕЙ (ДО 5 ГОЛОВ)
-    let p = { y: 150 }, b = { y: 150 }, puck = { x: 250, y: 150, vx: 4, vy: 2 }, score = { p: 0, b: 0 }, active = false;
+    // ФОТО И НИК
+    document.getElementById('fileIn').onchange = e => {
+        let r = new FileReader();
+        r.onload = () => { user.pfp = r.result; save(); };
+        r.readAsDataURL(e.target.files[0]);
+    };
+    function syncName() { user.name = document.getElementById('nameIn').value || "Игрок_Кот"; save(); }
 
     function startMatch() {
         document.getElementById('menu').style.display = 'none';
-        score = { p: 0, b: 0 }; puck.x = 250; puck.vx = (Math.random() > 0.5 ? 4 : -4); active = true; loop();
+        b.s = parseFloat(document.getElementById('botDiff').value);
+        score = { p: 0, b: 0 }; resetPuck(); active = true; loop();
+    }
+
+    function resetPuck() {
+        puck.x = 300; puck.y = 175;
+        puck.vx = (Math.random() > 0.5 ? 5 : -5);
+        puck.vy = (Math.random() - 0.5) * 8;
     }
 
     function loop() {
         if(!active) return;
         puck.x += puck.vx; puck.y += puck.vy;
-        if(puck.y < 8 || puck.y > 292) puck.vy *= -1;
-        
-        // AI Бот (Средний)
-        let target = puck.y;
-        if(b.y < target) b.y += 3.2; else b.y -= 3.2;
+        if(puck.y < puck.r || puck.y > 350 - puck.r) puck.vy *= -1;
 
-        // Физика отскоков
-        if(puck.x < 25 && Math.abs(puck.y - p.y) < 30) puck.vx = Math.abs(puck.vx) + 0.3;
-        if(puck.x > 475 && Math.abs(puck.y - b.y) < 30) puck.vx = -Math.abs(puck.vx) - 0.3;
+        // Бот
+        if(b.y < puck.y) b.y += b.s; else b.y -= b.s;
 
-        if(puck.x < 0) { score.b++; puck.x=250; puck.vx=4; }
-        if(puck.x > 500) { score.p++; puck.x=250; puck.vx=-4; }
+        // Коллизии
+        if(puck.x < 40 && Math.abs(puck.y - p.y) < 35) puck.vx = Math.abs(puck.vx) + 0.5;
+        if(puck.x > 560 && Math.abs(puck.y - b.y) < 35) puck.vx = -Math.abs(puck.vx) - 0.5;
+
+        if(puck.x < 0) { score.b++; resetPuck(); }
+        if(puck.x > 600) { score.p++; resetPuck(); }
         document.getElementById('score').innerText = `${score.p} : ${score.b}`;
 
-        ctx.clearRect(0,0,500,300);
-        // Шайба
-        ctx.fillStyle="#333"; ctx.beginPath(); ctx.arc(puck.x, puck.y, 8, 0, Math.PI*2); ctx.fill();
-        // Игроки
-        ctx.fillStyle="cyan"; ctx.fillRect(5, p.y-25, 10, 50);
-        ctx.fillStyle="red"; ctx.fillRect(485, b.y-25, 10, 50);
+        // Отрисовка
+        ctx.clearRect(0,0,600,350);
+        ctx.fillStyle="#333"; ctx.beginPath(); ctx.arc(puck.x, puck.y, puck.r, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle=p.c; ctx.fillRect(10, p.y-30, 15, 60);
+        ctx.fillStyle=b.c; ctx.fillRect(575, b.y-30, 15, 60);
 
         if(score.p >= 5 || score.b >= 5) {
             active = false;
-            let win = score.p >= 5;
-            if(win) { user.elo += 25; user.streak++; } else { user.elo = Math.max(0, user.elo-15); user.streak=0; }
-            save();
-            document.getElementById('mMsg').innerText = win ? "ПОБЕДА!" : "ПОРАЖЕНИЕ";
-            document.getElementById('menu').style.display = 'flex';
+            finishMatch(score.p >= 5);
         } else requestAnimationFrame(loop);
     }
 
-    // ТИТУЛЫ
-    function openTitles() {
-        const grid = document.getElementById('titlesGrid'); grid.innerHTML = '';
-        ALL_TITLES.forEach(t => {
-            const isLocked = user.elo < t.req;
-            const card = document.createElement('div');
-            card.className = `title-card ${isLocked ? 'locked' : ''}`;
-            card.innerHTML = `<span class="${t.class}">${t.name}</span><br><small>${t.req} ELO</small>`;
-            if(!isLocked) card.onclick = () => { user.activeTitleId = t.id; save(); closeTitles(); };
-            grid.appendChild(card);
-        });
-        document.getElementById('titles-screen').style.display = 'block';
+    function finishMatch(win) {
+        if(win) {
+            let gain = Math.floor(b.s * 10);
+            user.elo += gain; user.streak++;
+            document.getElementById('mMsg').innerText = "ПОБЕДА! +" + gain;
+        } else {
+            user.elo = Math.max(0, user.elo - 20); user.streak = 0;
+            document.getElementById('mMsg').innerText = "ПОРАЖЕНИЕ!";
+        }
+        save();
+        document.getElementById('menu').style.display = 'flex';
     }
-    function closeTitles() { document.getElementById('titles-screen').style.display = 'none'; }
-    
-    // ФОТО
-    document.getElementById('f').onchange = e => {
-        let r = new FileReader(); r.onload = () => { user.pfp = r.result; save(); }; r.readAsDataURL(e.target.files);
-    };
+
+    function updateUI() {
+        document.getElementById('eloShow').innerText = user.elo;
+        document.getElementById('streakShow').innerText = user.streak;
+        document.getElementById('uidShow').innerText = user.uid;
+        document.getElementById('nameShow').innerText = user.name;
+        document.getElementById('pfpImg').src = user.pfp;
+        
+        const t = document.getElementById('titleShow');
+        if(user.elo > 1300) { t.innerText = "ПЕРЛАМУТРОВЫЙ БОГ"; t.className = "title-badge pearl-t"; }
+        else if(user.elo > 1100) { t.innerText = "ЗОЛОТОЙ МАСТЕР"; t.className = "title-badge gold-t"; }
+        else { t.innerText = "НОВИЧОК"; t.className = "title-badge"; t.style.color = "#aaa"; }
+
+        user.bp = Math.floor((user.elo - 1000) / 40) + 1;
+        document.getElementById('bpLvl').innerText = user.bp > 0 ? user.bp : 1;
+        
+        const track = document.getElementById('bpTrack'); track.innerHTML = '';
+        for(let i=1; i<=15; i++) {
+            let item = document.createElement('div');
+            item.className = `bp-item ${i <= user.bp ? 'unlocked' : ''}`;
+            item.innerHTML = `<div>Ур. ${i}</div><div style="font-size:20px">${i === 15 ? '💎' : '🎁'}</div>`;
+            track.appendChild(item);
+        }
+    }
 
     updateUI();
 </script>
 </body>
 </html>
+
