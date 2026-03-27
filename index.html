@@ -3,239 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Три Кота: Хоккей ELO Mobile</title>
+    <title>Три Кота: Hockey ELO & BP</title>
     <style>
         :root {
             --gold: linear-gradient(90deg, #bf953f, #fcf6ba, #b38728, #fcf6ba, #aa771c);
-            --pearl: linear-gradient(135deg, #fff5ff, #e6d3f9, #c8f4f9, #f9d3e3, #fff5ff);
-            --accent: #ff4757;
+            --pearl: linear-gradient(135deg, #fff, #e6d3f9, #c8f4f9, #f9d3e3, #fff);
+            --accent: #00d2ff;
         }
         body { 
-            background: #0a0a12; color: white; font-family: sans-serif; 
-            margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
-            touch-action: none; /* Отключает скролл при игре */
+            background: #05050a; color: white; font-family: 'Arial', sans-serif; 
+            margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; 
         }
         
-        /* ВЕРХНЯЯ ПАНЕЛЬ / ПРОФИЛЬ */
-        .header { background: #161625; padding: 10px; display: flex; align-items: center; gap: 15px; border-bottom: 2px solid #252545; }
-        .pfp-box { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent); overflow: hidden; flex-shrink: 0; }
-        .pfp-box img { width: 100%; height: 100%; object-fit: cover; }
+        /* ШАПКА / ПРОФИЛЬ */
+        .header { background: #11111d; padding: 15px; display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #222; }
+        .pfp-wrap { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--accent); overflow: hidden; cursor: pointer; flex-shrink: 0; }
+        .pfp-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-data { flex-grow: 1; }
         
-        .user-info { flex-grow: 1; }
-        #userName { margin: 0; font-size: 16px; }
-        .title { font-size: 10px; font-weight: 900; text-transform: uppercase; }
-        .gold { background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .pearl { background: var(--pearl); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite linear; background-size: 200%; }
+        /* ТИТУЛЫ */
+        .title-badge { font-weight: 900; font-size: 12px; text-transform: uppercase; display: inline-block; margin-top: 5px; }
+        .gold-t { background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 2s infinite linear; background-size: 200%; }
+        .pearl-t { background: var(--pearl); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite linear; background-size: 200%; filter: drop-shadow(0 0 5px #fff); }
+        @keyframes shine { to { background-position: 200% center; } }
 
-        .stats { background: #1f1f35; padding: 5px 15px; border-radius: 10px; text-align: center; }
+        /* ИГРОВОЕ ПОЛЕ */
+        .game-main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        canvas { background: #f0f0f5; border: 5px solid #333; border-radius: 15px; max-width: 95%; height: auto; }
         
-        /* ВЫБОР УСТРОЙСТВА */
-        .device-selector { padding: 10px; display: flex; justify-content: center; gap: 10px; background: #0a0a12; }
-        .dev-btn { padding: 5px 15px; border: 1px solid #444; background: #222; color: white; border-radius: 5px; cursor: pointer; }
-        .dev-btn.active { background: var(--accent); border-color: white; }
-
-        /* ИГРОВАЯ ЗОНА */
-        .game-container { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        #score { font-size: 30px; font-weight: bold; margin-bottom: 5px; }
-        canvas { background: #fff; border-radius: 10px; max-width: 95%; height: auto; touch-action: none; }
+        /* BATTLE PASS */
+        .bp-container { background: #11111d; padding: 15px; border-top: 2px solid #222; }
+        .bp-track { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .bp-level { min-width: 80px; height: 90px; background: #1a1a2e; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; border: 1px solid #333; transition: 0.3s; }
+        .bp-level.active { border-color: var(--accent); background: #1a2e3e; transform: scale(1.05); }
+        .bp-level.final { background: var(--pearl); color: black; font-weight: bold; }
 
         /* МЕНЮ */
-        #menu { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 10; 
-        }
-        .start-btn { padding: 15px 40px; font-size: 20px; background: var(--accent); border: none; border-radius: 30px; color: white; font-weight: bold; }
-
-        @keyframes shine { to { background-position: 200% center; } }
-        .hidden { display: none; }
+        #menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
+        .btn-start { padding: 15px 50px; font-size: 20px; background: var(--accent); border: none; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; }
+        
+        .device-toggle { position: absolute; top: 10px; right: 10px; background: #222; padding: 5px; border-radius: 5px; font-size: 10px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="pfp-box" onclick="document.getElementById('photoInput').click()">
-            <img src="https://i.imgur.com" id="avatarImg">
+        <div class="pfp-wrap" onclick="document.getElementById('file').click()">
+            <img src="https://i.imgur.com" id="pfp">
         </div>
-        <input type="file" id="photoInput" class="hidden" accept="image/*">
+        <input type="file" id="file" hidden accept="image/*">
         
-        <div class="user-info">
-            <input type="text" id="nameInput" placeholder="Ник..." oninput="syncName()" style="background:none; border:1px solid #333; color:white; width:80px; font-size:12px;">
-            <h4 id="userNameDisplay">Коржик_Топ</h4>
-            <div id="userTitle" class="title gold">ЗОЛОТОЙ ЧЕМПИОН</div>
+        <div class="profile-data">
+            <input type="text" id="nick" placeholder="Твой ник" oninput="updName()" style="background:none; border:1px solid #444; color:white; font-size:12px; border-radius:3px;">
+            <h3 id="nameShow" style="margin:5px 0;">Коржик_Топ</h3>
+            <div id="titleShow" class="title-badge gold-t">ЗОЛОТОЙ МАСТЕР</div>
         </div>
 
-        <div class="stats">
-            <div style="font-size:18px; color:#44ffaa;" id="eloDisplay">1000</div>
-            <div style="font-size:10px; color:orange;">СЕРИЯ: <span id="streakDisplay">0</span></div>
+        <div style="text-align:center;">
+            <div style="color:#44ffaa; font-size:24px; font-weight:bold;" id="eloShow">1000</div>
+            <div style="font-size:10px; color:orange;">СЕРИЯ: <span id="streakShow">0</span> 🔥</div>
         </div>
     </div>
 
-    <div class="device-selector">
-        <span>Управление: </span>
-        <button class="dev-btn active" onclick="setDevice('pc', this)">ПК (Мышь)</button>
-        <button class="dev-btn" onclick="setDevice('mobile', this)">Телефон (Палец)</button>
-    </div>
-
-    <div class="game-container">
-        <div id="score">0 : 0</div>
-        <canvas id="hockeyCanvas" width="600" height="350"></canvas>
+    <div class="game-main">
+        <div class="device-toggle">
+            Управление: 
+            <select id="ctrl" style="background:#000; color:#fff; border:none;">
+                <option value="pc">Мышь</option>
+                <option value="mob">Палец</option>
+            </select>
+        </div>
+        <div style="font-size:30px; margin-bottom:10px;" id="score">0 : 0</div>
+        <canvas id="arena" width="600" height="350"></canvas>
         
         <div id="menu">
-            <h2 id="resText">ГОТОВ К ФАРМУ ELO?</h2>
-            <select id="botLvl" style="margin-bottom:15px; padding:10px; border-radius:10px;">
-                <option value="1.5">Бот: Новичок</option>
-                <option value="3.5">Бот: Средний</option>
-                <option value="6">Бот: ЛЕГЕНДА</option>
+            <h2 id="msg">ГОТОВ К ИГРЕ?</h2>
+            <p style="font-size:12px; color:#aaa;">Сложность бота:</p>
+            <select id="diff" style="padding:10px; margin-bottom:20px; border-radius:5px;">
+                <option value="2">Бот: Новичок</option>
+                <option value="4">Бот: Профи</option>
+                <option value="7.5">Бот: ЛЕГЕНДА</option>
             </select>
-            <button class="start-btn" onclick="initGame()">ИГРАТЬ</button>
+            <button class="btn-start" onclick="beginMatch()">ИГРАТЬ</button>
         </div>
+    </div>
+
+    <div class="bp-container">
+        <div style="font-size:12px; margin-bottom:8px; display:flex; justify-content:space-between;">
+            <span>Battle Pass: Уровень <span id="bpLvl">1</span></span>
+            <span style="color:#aaa;">До приза: <span id="bpLeft">50</span> ELO</span>
+        </div>
+        <div class="bp-track" id="bpTrack"></div>
     </div>
 
 <script>
-    const canvas = document.getElementById('hockeyCanvas');
+    const canvas = document.getElementById('arena');
     const ctx = canvas.getContext('2d');
-    let elo = 1000, streak = 0, isPlaying = false;
-    let controlMode = 'pc';
+    let data = { elo: 1000, streak: 0, bpLvl: 1 };
+    let gameOn = false;
 
-    // Объекты
-    let player = { x: 50, y: 175, r: 20, color: '#00d2ff' };
-    let bot = { x: 550, y: 175, r: 20, color: '#ff4757', speed: 2 };
-    let puck = { x: 300, y: 175, vx: 0, vy: 0, r: 10 };
+    let p = { x: 50, y: 175, r: 22, c: '#00d2ff' };
+    let b = { x: 550, y: 175, r: 22, c: '#ff4757', s: 3 };
+    let puck = { x: 300, y: 175, vx: 0, vy: 0, r: 12 };
     let score = { p: 0, b: 0 };
 
-    // Установка ФОТО
-    document.getElementById('photoInput').onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => document.getElementById('avatarImg').src = reader.result;
-            reader.readAsDataURL(file);
-        }
+    // ЗАГРУЗКА ФОТО
+    document.getElementById('file').onchange = (e) => {
+        let r = new FileReader();
+        r.onload = () => document.getElementById('pfp').src = r.result;
+        r.readAsDataURL(e.target.files[0]);
     };
 
-    function syncName() {
-        document.getElementById('userNameDisplay').innerText = document.getElementById('nameInput').value || "Игрок";
-    }
+    function updName() { document.getElementById('nameShow').innerText = document.getElementById('nick').value || "Игрок"; }
 
-    function setDevice(mode, btn) {
-        controlMode = mode;
-        document.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    // УПРАВЛЕНИЕ (УНИВЕРСАЛЬНОЕ)
-    const handleInput = (clientX, clientY) => {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        let targetX = (clientX - rect.left) * scaleX;
-        let targetY = (clientY - rect.top) * scaleY;
-
-        // Ограничение движения (только своя половина)
-        if (targetX < player.r) targetX = player.r;
-        if (targetX > canvas.width/2 - player.r) targetX = canvas.width/2 - player.r;
-        if (targetY < player.r) targetY = player.r;
-        if (targetY > canvas.height - player.r) targetY = canvas.height - player.r;
-
-        player.x = targetX;
-        player.y = targetY;
+    // УПРАВЛЕНИЕ
+    const move = (cx, cy) => {
+        let rect = canvas.getBoundingClientRect();
+        let tx = (cx - rect.left) * (600 / rect.width);
+        let ty = (cy - rect.top) * (350 / rect.height);
+        p.x = Math.min(Math.max(p.r, tx), 300 - p.r);
+        p.y = Math.min(Math.max(p.r, ty), 350 - p.r);
     };
 
-    canvas.addEventListener('mousemove', (e) => { if(controlMode === 'pc') handleInput(e.clientX, e.clientY); });
-    canvas.addEventListener('touchmove', (e) => {
-        if(controlMode === 'mobile') {
+    canvas.addEventListener('mousemove', e => { if(document.getElementById('ctrl').value === 'pc') move(e.clientX, e.clientY); });
+    canvas.addEventListener('touchmove', e => {
+        if(document.getElementById('ctrl').value === 'mob') {
             e.preventDefault();
-            handleInput(e.touches[0].clientX, e.touches[0].clientY);
+            move(e.touches[0].clientX, e.touches[0].clientY);
         }
-    }, { passive: false });
+    }, {passive: false});
 
-    function initGame() {
+    function beginMatch() {
         document.getElementById('menu').style.display = 'none';
-        bot.speed = parseFloat(document.getElementById('botLvl').value);
+        b.s = parseFloat(document.getElementById('diff').value);
         score = { p: 0, b: 0 };
         resetPuck();
-        isPlaying = true;
-        updateLoop();
+        gameOn = true;
+        loop();
     }
 
     function resetPuck() {
         puck.x = 300; puck.y = 175;
         puck.vx = (Math.random() > 0.5 ? 4 : -4);
-        puck.vy = (Math.random() - 0.5) * 6;
+        puck.vy = (Math.random() - 0.5) * 8;
     }
 
-    function updateLoop() {
-        if(!isPlaying) return;
+    function loop() {
+        if(!gameOn) return;
+        puck.x += puck.vx; puck.y += puck.vy;
+        if(puck.y < puck.r || puck.y > 350 - puck.r) puck.vy *= -1;
 
-        // Физика шайбы
-        puck.x += puck.vx;
-        puck.y += puck.vy;
-
-        if(puck.y < puck.r || puck.y > canvas.height - puck.r) puck.vy *= -1;
-
-        // Бот ИИ
-        if(bot.y < puck.y) bot.y += bot.speed;
-        else bot.y -= bot.speed;
+        // AI Бот
+        if(b.y < puck.y) b.y += b.s; else b.y -= b.s;
 
         // Коллизии
-        [player, bot].forEach(obj => {
-            let dx = puck.x - obj.x;
-            let dy = puck.y - obj.y;
+        [p, b].forEach(o => {
+            let dx = puck.x - o.x, dy = puck.y - o.y;
             let dist = Math.sqrt(dx*dx + dy*dy);
-            if(dist < puck.r + obj.r) {
-                let angle = Math.atan2(dy, dx);
-                let power = Math.sqrt(puck.vx**2 + puck.vy**2) + 1.2;
-                puck.vx = Math.cos(angle) * power;
-                puck.vy = Math.sin(angle) * power;
+            if(dist < puck.r + o.r) {
+                let ang = Math.atan2(dy, dx);
+                let spd = Math.sqrt(puck.vx**2 + puck.vy**2) + 1;
+                puck.vx = Math.cos(ang) * spd; puck.vy = Math.sin(ang) * spd;
             }
         });
 
-        // Голы (до 5)
         if(puck.x < 0) { score.b++; resetPuck(); }
-        if(puck.x > canvas.width) { score.p++; resetPuck(); }
+        if(puck.x > 600) { score.p++; resetPuck(); }
         document.getElementById('score').innerText = `${score.p} : ${score.b}`;
 
         draw();
-
-        if(score.p >= 5 || score.b >= 5) endGame(score.p >= 5);
-        else requestAnimationFrame(updateLoop);
+        if(score.p >= 5 || score.b >= 5) stopGame(score.p >= 5);
+        else requestAnimationFrame(loop);
     }
 
     function draw() {
         ctx.clearRect(0,0,600,350);
-        ctx.strokeStyle = "#eee"; ctx.beginPath(); ctx.moveTo(300,0); ctx.lineTo(300,350); ctx.stroke();
-        
-        // Шайба
+        ctx.strokeStyle = "#ddd"; ctx.beginPath(); ctx.moveTo(300,0); ctx.lineTo(300,350); ctx.stroke();
         ctx.fillStyle = "#333"; ctx.beginPath(); ctx.arc(puck.x, puck.y, puck.r, 0, Math.PI*2); ctx.fill();
-        // Игроки
-        [player, bot].forEach(o => {
-            ctx.fillStyle = o.color; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        [p, b].forEach(o => {
+            ctx.fillStyle = o.c; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
         });
     }
 
-    function endGame(win) {
-        isPlaying = false;
+    function stopGame(win) {
+        gameOn = false;
         if(win) {
-            let gain = Math.floor(bot.speed * 10);
-            elo += gain; streak++;
-            document.getElementById('resText').innerText = `ПОБЕДА! +${gain} ELO`;
+            let gain = Math.floor(b.s * 15);
+            data.elo += gain; data.streak++;
+            document.getElementById('msg').innerText = `ПОБЕДА! +${gain} ELO`;
         } else {
-            elo = Math.max(0, elo - 15); streak = 0;
-            document.getElementById('resText').innerText = "ПОРАЖЕНИЕ! -15";
+            data.elo = Math.max(0, data.elo - 20); data.streak = 0;
+            document.getElementById('msg').innerText = "ПОРАЖЕНИЕ! -20";
         }
         updateUI();
         document.getElementById('menu').style.display = 'flex';
     }
 
     function updateUI() {
-        document.getElementById('eloDisplay').innerText = elo;
-        document.getElementById('streakDisplay').innerText = streak;
-        const t = document.getElementById('userTitle');
-        if(elo > 1300) { t.innerText = "ПЕРЛАМУТРОВЫЙ БОГ"; t.className = "title pearl"; }
-        else if(elo > 1100) { t.innerText = "ЗОЛОТОЙ ЛЕГЕНДА"; t.className = "title gold"; }
+        document.getElementById('eloShow').innerText = data.elo;
+        document.getElementById('streakShow').innerText = data.streak;
+        
+        // ТИТУЛЫ ОТ ELO
+        const t = document.getElementById('titleShow');
+        if(data.elo > 1300) { t.innerText = "ПЕРЛАМУТРОВЫЙ БОГ"; t.className = "title-badge pearl-t"; }
+        else if(data.elo > 1100) { t.innerText = "ЗОЛОТОЙ МАСТЕР"; t.className = "title-badge gold-t"; }
+        else { t.innerText = "НОВИЧОК КАТКА"; t.className = "title-badge"; t.style.color = "#aaa"; }
+
+        // BP PROGRESS
+        data.bpLvl = Math.floor((data.elo - 1000) / 50) + 1;
+        if(data.bpLvl < 1) data.bpLvl = 1;
+        document.getElementById('bpLvl').innerText = data.bpLvl;
+        document.getElementById('bpLeft').innerText = 50 - ((data.elo - 1000) % 50);
+        
+        const track = document.getElementById('bpTrack'); track.innerHTML = '';
+        for(let i=1; i<=10; i++) {
+            let level = document.createElement('div');
+            level.className = `bp-level ${i <= data.bpLvl ? 'active' : ''} ${i === 10 ? 'final' : ''}`;
+            level.innerHTML = `<div>Ур. ${i}</div><div style="font-size:18px">${i === 10 ? '💎' : '🎁'}</div>`;
+            track.appendChild(level);
+        }
     }
+
+    updateUI();
 </script>
 </body>
 </html>
